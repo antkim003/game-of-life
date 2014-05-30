@@ -4,11 +4,13 @@
 function Grid(width, height) {
   this.width = width;
   this.height = height;
-  this.life = new Life(environment);
-  this.life.buildTable(width, height);
-  this.grid = this.life.seed(width, height);
+  this.id = environment;
+  this.el = environment;
+  //this.life = new Life(environment);
+  this.buildTable();
+  this.grid = this.seed();
   // var seed = test.seed(100,100);
-  this.life.displayGrid(this);
+  this.displayGrid();
   // this.life.generate(this);
 }
 // // the value of the point
@@ -23,19 +25,17 @@ function Grid(width, height) {
     this.el = id;
   }
 
-  Life.prototype.buildTable = function(width, height) {
-    this.width = width;
-    this.height = height;
-    for (var i = width-1; i >= 0; i--) {
+  Grid.prototype.buildTable = function() {
+    for (var i = this.width-1; i >= 0; i--) {
       var tr = this.el.insertRow();
-      for (var j = height-1; j >= 0; j--) {
+      for (var j = this.height-1; j >= 0; j--) {
         var td = tr.insertCell();
         td.id = i + "x" + j;
       }
     }
   };
 
-  Life.prototype.setCell = function(cell) {
+  Grid.prototype.setCell = function(cell) {
     var row = cell.row,
         col = cell.col,
         isAlive = cell.isAlive();
@@ -49,22 +49,22 @@ function Grid(width, height) {
   };
 
   // diplay seeded elements onto the grid
-  Life.prototype.displayGrid = function(obj) {
+  Grid.prototype.displayGrid = function() {
     for (var i = 0; i < this.width; i++) {
       for (var j = 0; j < this.height; j++ ){
-        var cell = obj.grid[i][j];
-        obj.life.setCell(cell);        
+        var cell = this.grid[i][j];
+        this.setCell(cell);        
       }
     }
   };
 
   //populates the number of living/cells to start with
   //create an object for each individual cell
-  Life.prototype.seed = function(width, height) {
+  Grid.prototype.seed = function() {
     var grid = [];
-    for (var i = 0; i < width; i++ ){
+    for (var i = 0; i < this.width; i++ ){
       var row = [];
-        for (var j = 0; j < height; j++) {
+        for (var j = 0; j < this.height; j++) {
           var cell = new Cell(i, j);
           if (Math.random() <= 0.5) {
             cell.live();
@@ -77,17 +77,17 @@ function Grid(width, height) {
     }
     return grid;
   };
-  Life.prototype.generate = function(obj) {
-    this.updateCells(obj);
-    this.displayGrid(obj);
+  Grid.prototype.generate = function() {
+    this.updateCells();
+    this.displayGrid();
   }
-  Life.prototype.updateCells = function(obj) {
-    var oldArray = obj.grid;
+  Grid.prototype.updateCells = function() {
+    var oldArray = this.grid;
     var newArray = [];
     for (var i = 0; i < this.width; i++) {
       var newRowArray = [];
       for (var j = 0; j < this.height; j++) {
-        var cell = obj.grid[i][j];
+        var cell = this.grid[i][j];
         var lifeRules = this.calculateNeighbors(oldArray, i, j);
         var newCell = new Cell(i, j);
         if (lifeRules === 1) {
@@ -99,20 +99,18 @@ function Grid(width, height) {
       }
       newArray.push(newRowArray);
     }
-    obj.grid = newArray;
-    return obj.grid;
+    this.grid = newArray;
+    return this.grid;
   };
 
-  Life.prototype.calculateNeighbors = function(arr, x, y) {
-    var height = this.height;
-    var width = this.width;
+  Grid.prototype.calculateNeighbors = function(arr, x, y) {
     var neighborsCount = 0;
     var isAlive = arr[x][y].status === 1;
 
-    var left = (x - 1 < 0)         ? width - 1 : x-1,
-        right = (x + 1 > width-1)  ? 0        : x + 1,
-        top = (y - 1 < 0)          ? height - 1 : y - 1,
-        bottom = (y + 1 > height-1)? 0       : y + 1;
+    var left = (x - 1 < 0)         ? this.width - 1 : x-1,
+        right = (x + 1 > this.width-1)  ? 0        : x + 1,
+        top = (y - 1 < 0)          ? this.height - 1 : y - 1,
+        bottom = (y + 1 > this.height-1)? 0       : y + 1;
 
       neighborsCount = 
         // top left
@@ -187,4 +185,4 @@ var defaults = {
   interval: 150
 };
 var initiator = new Grid(defaults.width,defaults.height);
-setInterval(function() { initiator.life.generate(initiator) }, defaults.interval);
+setInterval(function() { initiator.generate() }, defaults.interval);
